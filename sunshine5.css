@@ -51,13 +51,21 @@
 .Portfolio img{
 	width: 100%;
 }
-@media screen and (max-width: 968px) {
+@media screen and (min-width: 468px) and (max-width: 968px){
 .Portfolio img{
-	width: 99%;
+	width: 50%;
 	margin-top: 36px;
 }
 .Team .col-md-3{
 	margin-top: 36px;
+}
+.nav2 .nav-list{
+	margin: auto;
+	width: 60%;
+}
+.nav2 .now{
+	margin: auto;
+	width: 60%;
 }
 }
 .row2{
@@ -90,6 +98,7 @@
 .active1{
 	padding: 10px 0;
 	background-color: #f8f9fb;
+	font-size: 1.6em;
 }
 .buy{
 	margin:20px;
