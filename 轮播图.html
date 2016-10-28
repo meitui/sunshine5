@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>焦点轮播图</title>
+    <style type="text/css">
+       *{ 
+            margin: 0;
+            padding: 0;
+       }
+       #container {
+            width: 600px;
+            height: 400px;  
+            overflow: hidden; 
+            position: relative;
+       }
+        #list { 
+            width: 4200px; 
+            height: 400px; 
+            position: absolute; 
+            z-index: 1;
+        }
+        #list img { 
+            width:600px;
+            height: 400px;
+            float: left;
+        }
+        #buttons { 
+            position: absolute; 
+            height: 10px; 
+            width: 100px; 
+            z-index: 2; 
+            bottom: 20px; 
+            left: 250px;
+        } 
+        #buttons span { 
+            cursor: pointer; 
+            float: left; 
+            border: 1px solid #fff; 
+            width: 10px; 
+            height: 10px; 
+            border-radius: 50%; 
+            background: #333; 
+            margin-right: 5px;
+        }
+        #buttons .on {  
+            background: orangered;
+        }
+        .arrow { 
+            cursor: pointer; 
+            display: none; 
+            line-height: 39px; 
+            text-align: center; 
+            font-size: 36px; 
+            font-weight: bold; 
+            width: 40px; 
+            height: 40px;  
+            position: absolute; 
+            z-index: 2; 
+            top: 180px; 
+            background-color: RGBA(0,0,0,.3); 
+            color: #fff;
+            text-decoration: none;
+        }
+        .arrow:hover { 
+            background-color: RGBA(0,0,0,.7);
+            text-decoration: none;
+        }
+        #container:hover .arrow { 
+            display: block;
+        }
+        #prev { 
+            left: 20px;
+        }
+        #next { 
+            right: 20px;
+        }
+    </style>
+    
+    <script type="text/javascript">
+
+        window.onload = function () {//在整个页面加载完之后获取元素
+            var container = document.getElementById('container');
+            var list = document.getElementById('list');
+            var buttons = document.getElementById('buttons').getElementsByTagName('span');
+            var prev = document.getElementById('prev');
+            var next = document.getElementById('next');
+            var index = 1;//用来存放当前是第几张图片或者是第几个小圆点
+            var len = 5;
+            var animated = false;//变量animated存放这个动画函数是否在运行的状态，初始状态为false，说明当时是没有在动画的（当图还没切换完的时候再点按钮不应该在继续切换，要等图切换完的时候再点按钮才继续切换）
+            var interval = 1000;
+            var timer;
+
+
+            function animate (offset) {
+                if (offset == 0) {
+                    return;
+                }
+                animated = true;//运行动画函数的时候animated = true
+                var time = 300;//位移总时间
+                var inteval = 10;//位移间隔时间
+                var speed = offset/(time/inteval);//每次位移量
+                var left = parseInt(list.style.left) + offset;//存放新的list.style.left值，根据offset来算值
+
+                var go = function (){
+                    if ( (speed > 0 && parseInt(list.style.left) < left) || (speed < 0 && parseInt(list.style.left) > left)) {//向右移动||向左移动
+                        list.style.left = parseInt(list.style.left) + speed + 'px';
+                        setTimeout(go, inteval);//定时器，第一个填要运行的函数，第二个填时间，inteval时间以后运行go函数，递归算法
+                    }
+                    else {
+                        animated = false;//不做位移的时候，说明动画已经执行完毕
+                        list.style.left = left + 'px';
+                        if(left>-600){//当图片移到第-1张时，图片变成第五张
+                            list.style.left = -600 * len + 'px';
+                        }
+                        if(left<(-600 * len)) {
+                            list.style.left = '-600px';
+                        }
+                        
+                    }
+                }
+                go();
+                //debugger;
+            }
+
+            function showButton() {
+                for (var i = 0; i < buttons.length ; i++) {//亮起来的小圆点前面的小圆点变灰
+                    if( buttons[i].className == 'on'){
+                        buttons[i].className = '';
+                        break;
+                    }
+                }
+                buttons[index - 1].className = 'on';//点到小圆点亮起来
+            }
+
+            function play() {//鼠标移开图的时候自动切换图
+                timer = setTimeout(function () {
+                    next.onclick();//触发
+                    play();//递归
+                }, interval);
+            }
+            function stop() {//鼠标移开图的时候
+                clearTimeout(timer);//清除定时器
+            }
+
+            next.onclick = function () {//把要做的事情绑在onclick事件上，当onclick被出发的时候里面的代码就会运行
+                if (animated) {//当动画在运行的时候不执行下面的代码
+                    return;
+                }
+                if (index == 5) {//当到了第五张时变成第一张
+                    index = 1;
+                }
+                else {
+                    index += 1;//每次点击当前值都会改变一下
+                }
+                animate(-600);
+                showButton();
+            }
+            prev.onclick = function () {
+                if (animated) {
+                    return;
+                }
+                if (index == 1) {
+                    index = 5;
+                }
+                else {
+                    index -= 1;
+                }
+                animate(600);
+                showButton();
+            }
+
+            for (var i = 0; i < buttons.length; i++) {
+                buttons[i].onclick = function () {
+                    if (animated) {//为了防止当点击当前的按钮时后面的程序还会跑
+                        return;//return的意思是当程序跑到这里就退出这个函数后面的程序就不会被执行了
+                    }
+                    if(this.className == 'on') {
+                        return;
+                    }
+                    var myIndex = parseInt(this.getAttribute('index'));//myIndex存放我被点击的自身的index值，index是自定义的属性，不是DOM自带的属性，所以不能通过点来获取，但可以通过getAttribute()放方法来获取，getAttribute()是DOM二级方法，既可以获取自定义的属性，又可以获取DOM自带的属性
+                    var offset = -600 * (myIndex - index);//可以每次点击小圆点的偏移量
+
+                    animate(offset);//传入offset切换图片
+                    index = myIndex;//将index归位成当前最新的状态
+                    showButton();//不要忘了小圆点也要变
+                }
+            }
+
+            container.onmouseover = stop;
+            container.onmouseout = play;
+
+            play();//鼠标不做任何动作自动播放
+
+        }
+    </script>
+</head>
+<body>
+
+<div id="container">
+    <div id="list" style="left:-600px;">
+        <img src="images/u=2765428159,1658013072&fm=21&gp=0.jpg" alt="1"/>
+        <img src="images/u=1034559023,3024784263&fm=21&gp=0.jpg" alt="1"/>
+        <img src="images/zhu10.jpg" alt="2"/>
+        <img src="images/zhu7.jpg" alt="3"/>
+        <img src="images/u=3582131429,2761417247&fm=21&gp=0.jpg" alt="4"/>
+        <img src="images/u=2765428159,1658013072&fm=21&gp=0.jpg" alt="5"/>
+        <img src="images/u=1034559023,3024784263&fm=21&gp=0.jpg" alt="5"/>
+    </div>
+    <div id="buttons">
+        <span index="1" class="on"></span>
+        <span index="2"></span>
+        <span index="3"></span>
+        <span index="4"></span>
+        <span index="5"></span>
+    </div>
+    <a href="javascript:;" id="prev" class="arrow">&lt;</a><!--执行一段 空白JAVASCRIPT语句 并且返回的也是空或者false值
+把 javascript:; 加在超级链接上就可以防止链接跳转,
+从而可以给链接的onclick 方法上写自己想执行的代码.-->
+    <a href="javascript:;" id="next" class="arrow">&gt;</a>
+</div>
+
+</body>
+</html>
